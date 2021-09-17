@@ -1,2 +1,4 @@
 .workspace_trab_comp.code-workspace
 .vscode
+*.txt
+*.pdf
