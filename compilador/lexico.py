@@ -1,4 +1,4 @@
-import token
+from compilador import token
 
 def is_letra(letra) -> bool:
     return((letra >= 'a' and letra <= 'z') or (letra >= 'A' and letra <= 'Z'))
@@ -42,7 +42,7 @@ class Lexico:
         if(self.is_EOF()):
             return None
         
-        estado = 0
+        self.estado = 0
         char = ''
         termo = ''
 
@@ -55,6 +55,8 @@ class Lexico:
             if(self.estado == 0):
                 if(is_espaco(char)):
                     self.estado = 0
+                elif(char == 0):
+                    return None
                 elif(is_letra(char)):
                     self.estado = 1
                     termo += char
@@ -62,17 +64,15 @@ class Lexico:
                     self.estado = 3
                     termo += char
                 else:
-                    if(c == 0):
-                        return None
                     termo += char
-                    return token.Token(SIMBOLO, termo)
+                    return token.Token(token.Type.SIMBOLO, termo)
             elif(self.estado == 1):
                 if(is_digito(char) or is_letra(char)):
                     self.estado = 1
                     termo += char
                 else:
                     self.back()
-                    return token.Token(IDENTIFIER, termo)
+                    return token.Token(token.Type.IDENTIFIER, termo)
             elif(self.estado == 3):
                 if(is_digito(char)):
                     self.estado = 3
@@ -81,14 +81,14 @@ class Lexico:
                     termo += char
                 else:
                     self.back()
-                    return token.Token(INT, termo)
+                    return token.Token(token.Type.INT, termo)
             elif(self.estado == 4):
                 if(is_digito(char)):
                     self.estado = 4
                     termo += char
                 else:
                     self.back()
-                    return token.Token(REAL, termo)
+                    return token.Token(token.Type.REAL, termo)
                 
 
     
