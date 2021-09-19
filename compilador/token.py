@@ -17,6 +17,7 @@ class Type(Enum):
     REAL = 2
     SYMBOL = 3
     RESERVED_KEY = 4
+    RELATION = 5
 
 class Token:
 

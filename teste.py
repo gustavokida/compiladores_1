@@ -1,11 +1,19 @@
+from compiladores_1.compilador import lexico
 
-arq = "exemplo.lalg.txt"
+# from lexico import lexico
+# from token import token
 
-text = ''
-with open(arq) as f:
-    text = f.read()
-    f.close()
-# for c in range(len(text)):
-#     if c+1 < len(text):
-#         print(text[c+1])
+if __name__ == "__main__":
+    arq = "exemplo.lalg.txt"
+    scan = lexico.Lexico(arq)
+    t = ""
 
+    while(True):
+        t = scan.next_token()
+        if(t is None):
+            pass
+        else:
+            if(t.getTipoName() == "RELATION"):
+                print(t.toString())
+        if(t == None):
+            break
