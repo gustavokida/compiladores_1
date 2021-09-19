@@ -2,4 +2,6 @@
 .vscode
 *.txt
 *.pdf
-.teste.py
+teste.py
+./compilador.__pycache__
+.__pycache__
