@@ -1,4 +1,4 @@
-from compilador import lexico
+from compiladores_1.compilador import lexico
 
 # from lexico import lexico
 # from token import token

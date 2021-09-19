@@ -1,4 +1,4 @@
-from compilador import token
+from compiladores_1.compilador import token
 
 def is_letra(letra) -> bool:
     return((letra >= 'a' and letra <= 'z') or (letra >= 'A' and letra <= 'Z'))
@@ -64,12 +64,25 @@ class Lexico:
                     self.estado = 3
                     termo += char
                 else:
-                    termo += char
-                    return token.Token(token.Type.SIMBOLO, termo)
+                    if(char == ":"):
+                        self.estado = 5
+                        termo += char
+                    elif(char == "<"):
+                        self.estado = 6
+                        termo += char
+                    elif(char == ">"):
+                        self.estado = 7
+                        termo += char
+                    else:
+                        termo += char
+                        return token.Token(token.Type.SYMBOL, termo)
             elif(self.estado == 1):
                 if(is_digito(char) or is_letra(char)):
                     self.estado = 1
                     termo += char
+                elif(termo in token.reserved_keys):
+                    self.back()
+                    return token.Token(token.Type.RESERVED_KEY, termo)
                 else:
                     self.back()
                     return token.Token(token.Type.IDENTIFIER, termo)
@@ -79,6 +92,8 @@ class Lexico:
                 elif(char == "."):
                     self.estado = 4
                     termo += char
+                elif(is_letra(char)):
+                    raise RuntimeError("Número não reconhecido")
                 else:
                     self.back()
                     return token.Token(token.Type.INT, termo)
@@ -89,8 +104,27 @@ class Lexico:
                 else:
                     self.back()
                     return token.Token(token.Type.REAL, termo)
-                
+            elif(self.estado == 5):
+                if(char ==  "="):
+                    termo += char
+                    return token.Token(token.Type.SYMBOL, termo)
+                else:
+                    self.back()
+                    return token.Token(token.Type.SYMBOL, termo)
+            elif(self.estado == 6):
+                if(char == ">" or char == "="):
+                    termo += char
+                    return token.Token(token.Type.SYMBOL, termo)
+                else:
+                    self.back()
+                    return token.Token(token.Type.SYMBOL, termo)
+            elif(self.estado == 7):
+                if(char == "="):
+                    termo += char
+                    return token.Token(token.Type.SYMBOL, termo)
+                else:
+                    self.back()
+                    return token.Token(token.Type.SYMBOL, termo)
 
-    
-    
+
 
