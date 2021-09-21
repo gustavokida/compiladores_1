@@ -7,7 +7,7 @@ def is_digito(letra) -> bool:
     return((letra >= '0' and letra <= '9'))
 
 def is_espaco(letra) -> bool:
-    return (letra == ' ' or letra == '\n' or letra == '\t')
+    return (letra == ' ' or letra == '\n' or letra == '\t' or letra == '\r')
 
 class Lexico:
 
@@ -80,7 +80,12 @@ class Lexico:
                         termo += char
                         return token.Token(token.Type.SYMBOL, termo)
             elif(self.estado == 1):
-                if(is_digito(char) or is_letra(char)):
+                if char == 0:
+                    if termo in token.reserved_keys:
+                        return token.Token(token.Type.RESERVED_KEY, termo)
+                    else:
+                        return token.Token(token.Type.IDENTIFIER, termo)
+                elif(is_digito(char) or is_letra(char)):
                     self.estado = 1
                     termo += char
                 elif(termo in token.reserved_keys):
@@ -90,7 +95,9 @@ class Lexico:
                     self.back()
                     return token.Token(token.Type.IDENTIFIER, termo)
             elif(self.estado == 3):
-                if(is_digito(char)):
+                if char == 0:
+                    return token.Token(token.Type.INT, termo)
+                elif(is_digito(char)):
                     self.estado = 3
                 elif(char == "."):
                     self.estado = 4
@@ -101,27 +108,35 @@ class Lexico:
                     self.back()
                     return token.Token(token.Type.INT, termo)
             elif(self.estado == 4):
-                if(is_digito(char)):
+                if char == 0:
+                    return token.Token(token.Type.REAL, termo)
+                elif(is_digito(char)):
                     self.estado = 4
                     termo += char
                 else:
                     self.back()
                     return token.Token(token.Type.REAL, termo)
             elif(self.estado == 5):
-                if(char ==  "="):
+                if char == 0:
+                    return token.Token(token.Type.SYMBOL, termo)
+                elif(char ==  "="):
                     termo += char
                     return token.Token(token.Type.SYMBOL, termo)
                 else:
                     self.back()
                     return token.Token(token.Type.SYMBOL, termo)
             elif(self.estado == 6):
-                if(char == ">" or char == "="):
+                if char == 0:
+                    return token.Token(token.Type.RELATION, termo)
+                elif(char == ">" or char == "="):
                     termo += char
                     return token.Token(token.Type.RELATION, termo)
                 else:
                     self.back()
                     return token.Token(token.Type.RELATION, termo)
             elif(self.estado == 7):
+                if char == 0:
+                    return token.Token(token.Type.RELATION, termo)
                 if(char == "="):
                     termo += char
                     return token.Token(token.Type.RELATION, termo)
