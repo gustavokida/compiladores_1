@@ -7,6 +7,16 @@ class Sintatico:
         #self.simbolo = ''
         self.tabela_simbolo = {}
         self.tipo = ''
+        self.temp = 0
+        self.codigo = ""
+
+    def gera_temp(self):
+        temporario = self.temp
+        self.temp += 1
+        return "t" + str(temporario)
+
+    def code(self, op, arg1, arg2, result):
+        self.codigo += op + ";" + arg1 + ";" + arg2 + ";" + result + "\n"
 
     def obtem_simbolo(self):
         self.simbolo = self.lexico.next_token()
