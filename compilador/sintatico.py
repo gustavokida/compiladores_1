@@ -12,10 +12,10 @@ class Sintatico:
         self.linha = 0
         self.linha_temp = 0
 
-    def gera_temp(self):
+    def gera_temp(self, tipo):
         temporario = self.temp
         self.temp += 1
-        return "t" + str(temporario)
+        return simbolo.Simbolo("t" + str(temporario), tipo)
 
     def code(self, op, arg1, arg2, result):
         self.codigo += str(self.linha) + " - " + op + ";" + arg1 + ";" + arg2 + ";" + result + "\n"
@@ -120,7 +120,7 @@ class Sintatico:
             if self.verifica_tabela(self.simbolo.getTermo()):
                 self.tabela_simbolo[self.simbolo.getTermo()] = simbolo.Simbolo(self.simbolo.getTermo(), self.tipo)
             else:
-                raise RuntimeError(f"Erro semântico. Identificador '{self.simbolo.getTermo()}' já encontrado.")
+                raise RuntimeError(f"Erro semântico. Identificador '{self.simbolo.getTermo()}' já declarado.")
             self.code("ALME", variaveis_esq, "", self.simbolo.getTermo())
             self.obtem_simbolo()
             self.mais_var(variaveis_esq)
@@ -160,14 +160,17 @@ class Sintatico:
             if self.verifica_termo("("):
                 self.obtem_simbolo()
                 if self.verifica_tipo("IDENTIFIER"):
-                    ident = self.simbolo.getTermo()
-                    self.obtem_simbolo()
+                    ident = self.simbolo
+                    if ident.getTermo() in self.tabela_simbolo.keys():
+                        self.obtem_simbolo()
+                    else:
+                        raise RuntimeError(f"Erro semântico. identificador '{self.simbolo.getTermo()}' não declarado")
                     if self.verifica_termo(")"):
                         self.obtem_simbolo()
                         if op == "read":
-                            self.code(op, "", "", ident)
+                            self.code(op, "", "", ident.getTermo())
                         else:
-                            self.code(op, ident, "", "")
+                            self.code(op, ident.getTermo(), "", "")
                     else:
                         raise RuntimeError(f"Erro sintático. Esperado ')' obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
                 else:
@@ -175,12 +178,20 @@ class Sintatico:
             else:
                 raise RuntimeError(f"Erro sintático. Esperado '(' obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
         elif self.verifica_tipo("IDENTIFIER"):
-            ident = self.simbolo.getTermo()
-            self.obtem_simbolo()
+            ident = self.simbolo
+            if ident.getTermo() in self.tabela_simbolo.keys():
+                ident = self.tabela_simbolo[self.simbolo.getTermo()]
+                self.obtem_simbolo()
+            else:
+                raise RuntimeError(f"Erro semântico. identificador '{self.simbolo.getTermo()}' não declarado")
             if self.verifica_termo(":="):
                 self.obtem_simbolo()
                 expressao_dir = self.expressao()
-                self.code(":=", expressao_dir, "", ident)
+                if ident.getTipo() == expressao_dir.getTipo():
+                    self.code(":=", expressao_dir.getNome(), "", ident.getNome())
+                else:
+                    raise RuntimeError(f"Erro semântico. {ident.getNome()} é {ident.getTipo()}" +
+                                       f" e {expressao_dir.getNome()} é {expressao_dir.getTipo()}")
             else:
                 raise RuntimeError(f"Erro sintático. Esperado ':=' obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
         elif self.verifica_termo("if"):
@@ -188,7 +199,7 @@ class Sintatico:
             condicao_dir = self.condicao()
             if self.verifica_termo("then"):
                 self.obtem_simbolo()
-                self.code("JF", condicao_dir, self.gera_linha_temp(), "")
+                self.code("JF", condicao_dir.getNome(), self.gera_linha_temp(), "")
                 self.comandos()
                 self.pfalsa(condicao_dir)
                 if self.verifica_termo("$"):
@@ -223,8 +234,8 @@ class Sintatico:
         minus_op = self.op_un()
         fator_dir = self.fator()
         if(minus_op == "-"):
-            fator1_dir = self.gera_temp()
-            self.code(minus_op, fator_dir, "", fator1_dir)
+            fator1_dir = self.gera_temp(fator_dir.getTipoName())
+            self.code(minus_op, fator_dir.getNome(), "", fator1_dir.getNome())
             mais_fatores_dir = self.mais_fatores(fator1_dir)
             return mais_fatores_dir
         else:
@@ -247,12 +258,17 @@ class Sintatico:
 
     def fator(self):
         print("fator")
-        if(self.verifica_tipo("IDENTIFIER")
-                or self.verifica_tipo("INT")
-                or self.verifica_tipo("REAL")):
-            ident = self.simbolo.getTermo()
+        if(self.verifica_tipo("IDENTIFIER")):
+            if self.simbolo.getTermo() in self.tabela_simbolo.keys():
+                ident = self.simbolo
+                self.obtem_simbolo()
+                return self.tabela_simbolo[ident.getTermo()]
+            else:
+                raise RuntimeError(f"Erro semântico. identificador '{self.simbolo.getTermo()}' não declarado")
+        elif self.verifica_tipo("INT") or self.verifica_tipo("REAL"):
+            ident = self.simbolo
             self.obtem_simbolo()
-            return ident
+            return simbolo.Simbolo(ident.getTermo(), ident.getTipoName())
         elif self.verifica_termo("("):
             self.obtem_simbolo()
             expressao_dir = self.expressao()
@@ -276,8 +292,12 @@ class Sintatico:
             arithmetic_op = self.op_mul()
             fator_dir = self.fator()
             mais_fatores1_dir = self.mais_fatores(fator_dir)
-            mais_fatores_dir = self.gera_temp()
-            self.code(arithmetic_op, mais_fatores_esq, mais_fatores1_dir, mais_fatores_dir)
+            if fator_dir.getTipo() == mais_fatores1_dir.getTipo():
+                mais_fatores_dir = self.gera_temp(fator_dir.getTipo())
+            else:
+                raise RuntimeError(f"Erro semântico. {fator_dir.getNome()} é {fator_dir.getTipo()}" +
+                                   f" e {mais_fatores1_dir.getNome()} é {mais_fatores1_dir.getTipo()}")
+            self.code(arithmetic_op, mais_fatores_esq.getNome(), mais_fatores1_dir.getNome(), mais_fatores_dir.getNome())
             return mais_fatores_dir
         else:
             return mais_fatores_esq
@@ -300,8 +320,12 @@ class Sintatico:
             arithmetic_op = self.op_ad()
             termo_dir = self.termo()
             outros_termos1_dir = self.outros_termos(termo_dir)
-            outros_termos_dir = self.gera_temp()
-            self.code(arithmetic_op, outros_termos_esq, outros_termos1_dir, outros_termos_dir)
+            if termo_dir.getTipo() == outros_termos1_dir.getTipo():
+                outros_termos_dir = self.gera_temp(termo_dir.getTipo())
+            else:
+                raise RuntimeError(f"Erro semântico. {termo_dir.getNome()} é {termo_dir.getTipo()}" +
+                                   f" e {outros_termos1_dir.getNome()} é {outros_termos1_dir.getTipo()}")
+            self.code(arithmetic_op, outros_termos_esq.getNome(), outros_termos1_dir.getNome(), outros_termos_dir.getNome())
             return outros_termos_dir
         else:
             return outros_termos_esq
@@ -320,8 +344,12 @@ class Sintatico:
         expressao_dir = self.expressao()
         op_relational = self.relacao()
         expressao1_dir = self.expressao()
-        condicao_dir = self.gera_temp()
-        self.code(op_relational, expressao_dir, expressao1_dir, condicao_dir)
+        if expressao_dir.getTipo() == expressao1_dir.getTipo():
+            condicao_dir = self.gera_temp(expressao_dir.getTipo())
+        else:
+            raise RuntimeError(f"Erro Semântico. {expressao_dir.getNome()} é {expressao_dir.getTipo()}" +
+                               f" e {expressao1_dir.getNome()} é {expressao1_dir.getTipo()}")
+        self.code(op_relational, expressao_dir.getNome(), expressao1_dir.getNome(), condicao_dir.getNome())
         return condicao_dir
 
     def relacao(self):
