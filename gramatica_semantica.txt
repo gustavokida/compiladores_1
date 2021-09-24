@@ -4,7 +4,8 @@
 <mais_dc> -> ; <dc> | λ
 <dc_v> ->  <tipo_var> : {variaveis.inh = tipo_var.syn} <variaveis>
 <tipo_var> -> real {tipo_var.syn = "real"} | integer {tipo_var.syn = "integer"}
-<variaveis> -> ident {addEntry(id.entry, variaveis.inh), code("ALME",variaveis.inh,,id.entry), mais_var.inh = variaveis.inh} <mais_var>
+<variaveis> -> ident {addEntry(id.entry, variaveis.inh), code("ALME",variaveis.inh,,id.entry),
+                    mais_var.inh = variaveis.inh} <mais_var>
 <mais_var> -> , {variaveis.inh = mais_var.inh} <variaveis> | λ {mais_var.syn = variaveis.inh}
 <comandos> -> <comando> <mais_comandos>
 <mais_comandos> -> ; <comandos> | λ
@@ -21,7 +22,8 @@
 <relacao> -> = {relacao.syn = "="} | <> {relacao.syn = "<>"} | >= {relacao.syn = ">="} | <= {relacao.syn = "<="} |
                 > {relacao.syn = ">"} | < {relacao.syn = "<"}
 <expressao> -> <termo> {outros_termos.inh = termo.syn} <outros_termos> {expressao.syn = outros_termos.inh}
-<termo> -> <op_un> <fator> {fator1_syn = geratemp(), code(op_un.syn,fator.syn,,fator1.syn), mais_fatores.inh = fator1_syn} <mais_fatores> {termo.syn = mais_fatores.inh}
+<termo> -> <op_un> <fator> {fator1_syn = geratemp(), code(op_un.syn,fator.syn,,fator1.syn),
+                mais_fatores.inh = fator1_syn} <mais_fatores> {termo.syn = mais_fatores.inh}
 <op_un> -> - {op_un.syn = "-"} | λ
 <fator> -> ident {fator.syn = id.entry} | numero_int {fator.syn = digit} | numero_real {fator.syn = digit} |
                 (<expressao>) {fator.syn = expressao.inh}
