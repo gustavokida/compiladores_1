@@ -5,4 +5,4 @@ teste.py
 /compilador.__pycache__/
 __pycache__/
 /automatos
-.txt
+*.txt
