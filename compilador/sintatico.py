@@ -373,9 +373,3 @@ class Sintatico:
             self.arruma_linha_temp(self.linha)
         else:
             raise RuntimeError(f"Erro sintático. Esperado 'else' obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
-
-
-
-
-
-
