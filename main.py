@@ -1,7 +1,6 @@
-from compiladores_1.compilador import sintatico
+#LINK GITHUB: https://github.com/gustavokida/compiladores_1
 
-# from lexico import lexico
-# from token import token
+from compiladores_1.compilador import sintatico
 
 if __name__ == "__main__":
     arq = "exemplo.lalg.txt"
