@@ -190,8 +190,8 @@ class Sintatico:
                 if ident.getTipo() == expressao_dir.getTipo():
                     self.code(":=", expressao_dir.getNome(), "", ident.getNome())
                 else:
-                    raise RuntimeError(f"Erro semântico. {ident.getNome()} é {ident.getTipo()}" +
-                                       f" e {expressao_dir.getNome()} é {expressao_dir.getTipo()}")
+                    raise RuntimeError(f"Erro semântico. '{ident.getNome()}' é {ident.getTipo()}" +
+                                       f" e '{expressao_dir.getNome()}' é {expressao_dir.getTipo()}")
             else:
                 raise RuntimeError(f"Erro sintático. Esperado ':=' obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
         elif self.verifica_termo("if"):
@@ -201,7 +201,7 @@ class Sintatico:
                 self.obtem_simbolo()
                 self.code("JF", condicao_dir.getNome(), self.gera_linha_temp(), "")
                 self.comandos()
-                self.pfalsa(condicao_dir)
+                self.pfalsa()
                 if self.verifica_termo("$"):
                     self.obtem_simbolo()
                 else:
@@ -292,11 +292,11 @@ class Sintatico:
             arithmetic_op = self.op_mul()
             fator_dir = self.fator()
             mais_fatores1_dir = self.mais_fatores(fator_dir)
-            if fator_dir.getTipo() == mais_fatores1_dir.getTipo():
-                mais_fatores_dir = self.gera_temp(fator_dir.getTipo())
+            if mais_fatores_esq.getTipo() == mais_fatores1_dir.getTipo():
+                mais_fatores_dir = self.gera_temp(mais_fatores_esq.getTipo())
             else:
-                raise RuntimeError(f"Erro semântico. {fator_dir.getNome()} é {fator_dir.getTipo()}" +
-                                   f" e {mais_fatores1_dir.getNome()} é {mais_fatores1_dir.getTipo()}")
+                raise RuntimeError(f"Erro semântico. '{mais_fatores_esq.getNome()}' é {mais_fatores_esq.getTipo()}" +
+                                   f" e '{mais_fatores1_dir.getNome()}' é {mais_fatores1_dir.getTipo()}")
             self.code(arithmetic_op, mais_fatores_esq.getNome(), mais_fatores1_dir.getNome(), mais_fatores_dir.getNome())
             return mais_fatores_dir
         else:
@@ -320,11 +320,11 @@ class Sintatico:
             arithmetic_op = self.op_ad()
             termo_dir = self.termo()
             outros_termos1_dir = self.outros_termos(termo_dir)
-            if termo_dir.getTipo() == outros_termos1_dir.getTipo():
-                outros_termos_dir = self.gera_temp(termo_dir.getTipo())
+            if outros_termos_esq.getTipo() == outros_termos1_dir.getTipo():
+                outros_termos_dir = self.gera_temp(outros_termos_esq.getTipo())
             else:
-                raise RuntimeError(f"Erro semântico. {termo_dir.getNome()} é {termo_dir.getTipo()}" +
-                                   f" e {outros_termos1_dir.getNome()} é {outros_termos1_dir.getTipo()}")
+                raise RuntimeError(f"Erro semântico. '{outros_termos_esq.getNome()}' é {outros_termos_esq.getTipo()}" +
+                                   f" e '{outros_termos1_dir.getNome()}' é {outros_termos1_dir.getTipo()}")
             self.code(arithmetic_op, outros_termos_esq.getNome(), outros_termos1_dir.getNome(), outros_termos_dir.getNome())
             return outros_termos_dir
         else:
@@ -361,7 +361,7 @@ class Sintatico:
         else:
             raise RuntimeError(f"Erro sintático. Esperado tipo RELATION obtido: {self.simbolo.getTermo() if self.simbolo != None else 'NULL'}")
 
-    def pfalsa(self, condicao_esq):
+    def pfalsa(self):
         print("pfalsa")
         if self.verifica_termo("$"):
             self.arruma_linha_temp(self.linha)

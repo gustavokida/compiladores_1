@@ -1,0 +1,34 @@
+<programa> -> program ident <corpo> .
+<corpo> -> <dc> begin <comandos> end
+<dc> -> <dc_v> <mais_dc>  | λ
+<mais_dc> -> ; <dc> | λ
+<dc_v> ->  <tipo_var> : {variaveis.inh = tipo_var.syn} <variaveis>
+<tipo_var> -> real {tipo_var.syn = "real"} | integer {tipo_var.syn = "integer"}
+<variaveis> -> ident {addEntry(id.entry, variaveis.inh), mais_var.inh = variaveis.inh} <mais_var>
+<mais_var> -> , {variaveis.inh = mais_var.inh} <variaveis> | λ {mais_var.syn = variaveis.inh}
+<comandos> -> <comando> <mais_comandos>
+<mais_comandos> -> ; <comandos> | λ
+
+<comando> -> read (ident {comando.id = id.entry, checkEntry(comando.id)} ) |
+							write (ident {comando.id = id.entry, checkEntry(comando.id)} ) |
+							ident {comando.id = id.entry, checkEntry(comando.id)} := <expressao>
+							       {comando.id1 = expressao.syn, CompareType(comando.id, comando.id1)} |
+							if <condicao> then <comandos> <pfalsa> $
+
+<condicao> -> <expressao> <relacao> <expressao1>
+                {compareType(expressao.syn, expressao1.syn), condicao.syn = compare(expressao.syn, expressao1.syn)}
+<relacao> -> = | <> | >= | <= | > | <
+<expressao> -> <termo> {outros_termos.inh = termo.syn} <outros_termos> {expressao.syn = outros_termos.inh}
+<termo> -> <op_un> {fator.inh = op_un.syn} <fator> {mais_fatores.inh = fator_syn} <mais_fatores> {termo.syn = mais_fatores.inh}
+<op_un> -> - {op_un.syn = "-"} | λ
+<fator> -> ident {fator.syn = id.entry} | numero_int {fator.syn = digit} | numero_real {fator.syn = digit} |
+                (<expressao>) {fator.syn = expressao.inh}
+<outros_termos> -> <op_ad> <termo> {outros_termos1.inh = termo.syn} <outros_termos1>
+                        {compareType(outros_termos.inh, outros_termos1.syn), outros_termos.syn = outros_termos1.syn}|
+                         λ {outros_termos.syn = outros_termos.inh}
+<op_ad> -> + | -
+<mais_fatores> -> <op_mul> <fator> {mais_fatores1.inh = fator.syn} <mais_fatores1>
+                        {compareType(mais_fatores.inh, mais_fatores1.syn), mais_fatores.syn = mais_fatores1.inh} |
+                         λ {mais_fatores.syn = mais_fatores.inh}
+<op_mul> -> * | /
+<pfalsa> -> else <comandos> | λ

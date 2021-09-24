@@ -1,4 +1,4 @@
-from compiladores_1.compilador import sintatico, simbolo
+from compiladores_1.compilador import sintatico
 
 # from lexico import lexico
 # from token import token
