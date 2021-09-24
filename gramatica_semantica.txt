@@ -1,34 +1,39 @@
-<programa> -> program ident <corpo> .
+<programa> -> program ident <corpo> . {code("PARA",,,)}
 <corpo> -> <dc> begin <comandos> end
 <dc> -> <dc_v> <mais_dc>  | λ
 <mais_dc> -> ; <dc> | λ
 <dc_v> ->  <tipo_var> : {variaveis.inh = tipo_var.syn} <variaveis>
 <tipo_var> -> real {tipo_var.syn = "real"} | integer {tipo_var.syn = "integer"}
-<variaveis> -> ident {addEntry(id.entry, variaveis.inh), mais_var.inh = variaveis.inh} <mais_var>
+<variaveis> -> ident {addEntry(id.entry, variaveis.inh), code("ALME",variaveis.inh,,id.entry), mais_var.inh = variaveis.inh} <mais_var>
 <mais_var> -> , {variaveis.inh = mais_var.inh} <variaveis> | λ {mais_var.syn = variaveis.inh}
 <comandos> -> <comando> <mais_comandos>
 <mais_comandos> -> ; <comandos> | λ
 
-<comando> -> read (ident {comando.id = id.entry, checkEntry(comando.id)} ) |
-							write (ident {comando.id = id.entry, checkEntry(comando.id)} ) |
-							ident {comando.id = id.entry, checkEntry(comando.id)} := <expressao>
-							       {comando.id1 = expressao.syn, CompareType(comando.id, comando.id1)} |
-							if <condicao> then <comandos> <pfalsa> $
+<comando> -> read (ident {checkEntry(id.entry)} ) {code("read",,,id.entry)} |
+							write (ident {checkEntry(id.entry)} ) {code("write", id.entry,,)} |
+							ident {checkEntry(id.entry)} := <expressao>
+							       {comando.id1 = expressao.syn, CompareType(id.entry, comando.id1),
+							            code(":=", comando.id1,,id.entry)} |
+							if <condicao> then {code("JF",condicao.syn,gera_linha_temp(),)} <comandos> <pfalsa> $
 
-<condicao> -> <expressao> <relacao> <expressao1>
-                {compareType(expressao.syn, expressao1.syn), condicao.syn = compare(expressao.syn, expressao1.syn)}
-<relacao> -> = | <> | >= | <= | > | <
+<condicao> -> <expressao> <relacao> <expressao1> {compareType(expressao.syn, expressao1.syn), condicao.syn = geratemp(),
+                                                    code(relacao.syn,expressao.syn,expressao1.syn,condicao.syn)}
+<relacao> -> = {relacao.syn = "="} | <> {relacao.syn = "<>"} | >= {relacao.syn = ">="} | <= {relacao.syn = "<="} |
+                > {relacao.syn = ">"} | < {relacao.syn = "<"}
 <expressao> -> <termo> {outros_termos.inh = termo.syn} <outros_termos> {expressao.syn = outros_termos.inh}
-<termo> -> <op_un> {fator.inh = op_un.syn} <fator> {mais_fatores.inh = fator_syn} <mais_fatores> {termo.syn = mais_fatores.inh}
+<termo> -> <op_un> <fator> {fator1_syn = geratemp(), code(op_un.syn,fator.syn,,fator1.syn), mais_fatores.inh = fator1_syn} <mais_fatores> {termo.syn = mais_fatores.inh}
 <op_un> -> - {op_un.syn = "-"} | λ
 <fator> -> ident {fator.syn = id.entry} | numero_int {fator.syn = digit} | numero_real {fator.syn = digit} |
                 (<expressao>) {fator.syn = expressao.inh}
 <outros_termos> -> <op_ad> <termo> {outros_termos1.inh = termo.syn} <outros_termos1>
-                        {compareType(outros_termos.inh, outros_termos1.syn), outros_termos.syn = outros_termos1.syn}|
+                        {compareType(outros_termos.inh, outros_termos1.syn), outros_termos.syn = geratemp(),
+                            code(op_ad.syn,outros_termos.inh,outros_termos1.syn,outros_termos.syn} |
                          λ {outros_termos.syn = outros_termos.inh}
-<op_ad> -> + | -
+<op_ad> -> + {op_ad.syn = "+"} | - {op_ad.syn = "-"}
 <mais_fatores> -> <op_mul> <fator> {mais_fatores1.inh = fator.syn} <mais_fatores1>
-                        {compareType(mais_fatores.inh, mais_fatores1.syn), mais_fatores.syn = mais_fatores1.inh} |
+                        {compareType(mais_fatores.inh, mais_fatores1.syn), mais_fatores.syn = geratemp(),
+                            code(op_mul.syn,mais_fatores.inh,mais_fatores1.syn,mais_fatores.syn} |
                          λ {mais_fatores.syn = mais_fatores.inh}
-<op_mul> -> * | /
-<pfalsa> -> else <comandos> | λ
+<op_mul> -> * {op_mul.syn = "*"} | / {op_mul.syn = "\"}
+<pfalsa> -> else {replace_linha_temp(linha+1), code("goto",gera_linha_temp(),} <comandos> {replace_linha_temp(linha) |
+                λ {replace_linha_temp(linha)}
