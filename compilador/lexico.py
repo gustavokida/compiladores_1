@@ -1,4 +1,4 @@
-from compiladores_1.compilador import token
+from compilador import token
 
 def is_letra(letra) -> bool:
     return((letra >= 'a' and letra <= 'z') or (letra >= 'A' and letra <= 'Z'))

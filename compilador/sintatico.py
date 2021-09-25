@@ -1,4 +1,4 @@
-from compiladores_1.compilador import lexico, simbolo
+from compilador import lexico, simbolo
 
 class Sintatico:
 
