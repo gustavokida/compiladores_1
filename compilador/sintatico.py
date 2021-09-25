@@ -24,10 +24,10 @@ class Sintatico:
     def gera_linha_temp(self):
         self.linha_temp += 1
         linha = self.linha_temp
-        return "X" + str(linha)
+        return str(linha) + "X"
 
     def arruma_linha_temp(self, linha):
-        self.codigo = self.codigo.replace("X" + str(self.linha_temp), str(linha))
+        self.codigo = self.codigo.replace(str(self.linha_temp) + "X", str(linha))
         self.linha_temp -= 1
 
     def obtem_simbolo(self):
