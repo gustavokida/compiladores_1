@@ -303,6 +303,7 @@ class Sintatico:
             return mais_fatores_esq
 
     def op_mul(self):
+        print("op_mul")
         if self.verifica_termo("*") or self.verifica_termo("/"):
             op_mul_dir = self.simbolo.getTermo()
             self.obtem_simbolo()
